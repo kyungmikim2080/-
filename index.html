@@ -213,7 +213,9 @@ td.mod{background:#fef9c3!important;}
       UT 불러오기
     </button>
     <input type="file" id="fiUT" accept=".html" onchange="loadUT(event)" style="display:none">
-    <button class="btn-save saving" id="btnSave" onclick="saveHTML()" title="현재 데이터를 HTML에 저장 후 다운로드"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 저장 중…</button>
+    <button class="btn-save" id="btnSave" onclick="saveHTML()" title="현재 데이터를 HTML에 저장 후 다운로드"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      공유용 저장
+    </button>
     <input type="file" id="fi" accept=".xlsx,.xls" onchange="loadFile(event)" style="display:none">
   </div>
 </div>
@@ -1100,13 +1102,19 @@ function loadUT(e){
 
 function saveHTML(){
   const btn=document.getElementById('btnSave');
+
+  // ★ 핵심 수정: outerHTML을 버튼 변경 전에 먼저 캡처
+  //   (버튼을 먼저 바꾸고 나서 캡처하면 '저장 중...' 상태가 HTML에 내장됨)
+  const capturedHTML='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+
+  // 버튼 UI를 저장 중 상태로 변경 (캡처 이후이므로 저장 파일에 영향 없음)
   btn.classList.add('saving');
   btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 저장 중…';
 
   setTimeout(()=>{
     try{
-      // 1. 현재 전체 HTML 추출
-      let html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+      // 1. 미리 캡처해둔 HTML 사용 (버튼이 정상 상태인 시점의 스냅샷)
+      let html=capturedHTML;
 
       // 2. let D=[...]; 를 현재 D 배열로 교체
       //    고유 앵커: 앞 "let D=[", 뒤 "];\n\nconst BOM"
